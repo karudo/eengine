@@ -20,6 +20,8 @@
   "dependencies": {
     "coffee-script": "~1.6.3",
     "underscore": "~1.4.4",
-    "underscore.string": "~2.3.1"
+    "underscore.string": "~2.3.1",
+    "async": "~0.2.9",
+    "jquery-deferred": "~0.3.0"
   }
 }
