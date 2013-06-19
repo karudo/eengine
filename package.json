@@ -16,5 +16,10 @@
   "gitHead": "db21642245eaefdd1f169337b49a7cd97241614d",
   "bugs": {
     "url": "https://github.com/karudo/eengine/issues"
+  },
+  "dependencies": {
+    "coffee-script": "~1.6.3",
+    "underscore": "~1.4.4",
+    "underscore.string": "~2.3.1"
   }
 }
