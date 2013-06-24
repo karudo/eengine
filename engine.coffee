@@ -1,4 +1,3 @@
-{EventEmitter} = require('events')
 fs = require 'fs'
 path = require 'path'
 async = require 'async'
@@ -6,45 +5,64 @@ _ = require 'underscore'
 _s = require 'underscore.string'
 
 
-includeDirFiles = (dir, cb)->
-  ee.log 'includeDirFiles', dir
-  fs.readdir dir, (err, files)->
-    ret = {}
-    for file in files
-      [key] = file.split '.'
-      ret[_s.classify(key)] = require(path.join(dir, file))
-    cb no, ret
+includeDirFiles = (dir, classify = yes)->
+  console.log 'includeDirFiles', dir
+  files = fs.readdirSync dir
+  ret = {}
+  for file in files
+    [key] = file.split '.'
+    key = _s.classify(key) if classify
+    ret[key] = require(path.join(dir, file))
+  ret
+
 
 class EEngine
+
+  async: async
+
   constructor: ->
-    @events = new EventEmitter
-    @classes = {}
-    @controllers = {}
+    @config =
+      projectDir: path.dirname process.mainModule.filename
+      eeDir: 'ee'
+      controllersDir: 'controllers'
+    @classes = includeDirFiles(path.join(__dirname, 'classes'))
+    @events = new @classes.Events
+    @controllerManager = new @classes.ControllerManager
 
 
   log: (s...)-> console.log "LOG:", s...
 
 
-  _loadDir: (dir, cb)=>
-    includeDirFiles path.join(__dirname, dir), (err, files)=>
-      _.extend @[dir], files
-      cb no
+  _loadDir: (basedir)=>
+    (dir, cb)=>
+      includeDirFiles path.join(basedir, dir), (err, files)=>
+        _.extend @[dir], files
+        cb no
 
 
   _initEngine: ->
     @log '_initEngine'
-    async.eachSeries ['classes', 'controllers'], @_loadDir, =>
-      @events.emit '_initEngine'
+    @events.emit '_initEngine'
 
+  execController: (c, m, p, cb)->
+    @controllerManager.exec c, m, p, cb
 
-  start: (config)->
+  start: (config = {})->
+    _.extend @config, config
     @events.once '_initEngine', =>
-      @log 'start', config
+      controllers = includeDirFiles(path.join(@config.projectDir, @config.eeDir, @config.controllersDir), no)
+      for cn, co of controllers
+        @controllerManager.addController cn, co
+      @log 'start', @config
+      #async.eachSeries ['controllers'], @_loadDir(path.join(@config.projectDir, @config.eeDir)), =>
       @events.emit '_start'
 
 
   onStart: (cb)->
     @events.on '_start', cb
+
+  getError: (text)-> new @classes.error text
+  isError: (obj)-> obj instanceof @classes.error
 
 
 #create engine class
