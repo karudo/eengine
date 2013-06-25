@@ -19,6 +19,8 @@ includeDirFiles = (dir, classify = yes)->
 class EEngine
 
   async: async
+  _: _
+  _s: _s
 
   constructor: ->
     @config =

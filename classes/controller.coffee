@@ -1,14 +1,31 @@
 Base = require './base'
 
 module.exports = class Controller extends Base
-  #constructor: ()->
+  methods: {}
+  cbCalled: no
 
 
-  cb: (params...)->
-    @curCb params...
+  constructor: (@params, @cb)->
 
 
-  exec: (curMethod, params, @curCb)->
-    if @[curMethod]
-      @[curMethod] params...
+  callCb: (params...)->
+    @cbCalled = yes
+    @cb? params...
+
+
+  error: (text)->
+    @callCb "method error: #{text}"
+
+
+  ok: (v...)->
+    @callCb no, v...
+
+
+  methodExists: (m)->
+    ee._.isFunction @methods[m]
+
+
+  exec: (m)->
+    ret = @methods[m].call @, @
+    @ok ret unless @cbCalled
 
