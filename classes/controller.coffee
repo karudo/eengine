@@ -27,5 +27,4 @@ module.exports = class Controller extends Base
 
   exec: (m)->
     ret = @methods[m].call @, @
-    @ok ret unless @cbCalled
 
