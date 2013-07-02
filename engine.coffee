@@ -24,7 +24,7 @@ class EEngine
 
   constructor: ->
     @config =
-      projectDir: path.dirname process.mainModule.filename
+      projectDir: path.dirname process.mainModule?.filename
       eeDir: 'ee'
       controllersDir: 'controllers'
     @classes = includeDirFiles(path.join(__dirname, 'classes'))
