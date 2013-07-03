@@ -1,3 +1,5 @@
+ee = null
+
 fs = require 'fs'
 path = require 'path'
 async = require 'async'
@@ -15,59 +17,79 @@ includeDirFiles = (dir, classify = yes)->
     ret[key] = require(path.join(dir, file))
   ret
 
+extendNS = (dotNS, mainNS, name, o)->
+  obj = {}
+  if _.isString name
+    obj[name] = o
+  else
+    _.extend obj, name
+
+  for key of obj
+    if key.indexOf('.') > -1
+      dotNS[key] = obj[key]
+    else
+      mainNS[key] = obj[key]
+
+  return
+
 
 class EEngine
 
-  async: async
-  _: _
-  _s: _s
-
   constructor: ->
+    @_c = {}
+    @_i = {}
+    @addInstance {async, _, _s}
     @config =
       projectDir: path.dirname process.mainModule?.filename
-      eeDir: 'ee'
+      appDir: 'app'
       controllersDir: 'controllers'
-    @classes = includeDirFiles(path.join(__dirname, 'classes'))
-    @events = new @classes.Events
-    @controllerManager = new @classes.ControllerManager
+      globalVars: ['ee', 'eengine']
+
+
+  #classes namespace
+  c: (clName)=> @_c[clName] or @c[clName]
+
+  addClass: (name, cl)-> extendNS @_c, @c, name, cl
+
+
+  #instances namespace
+  i: (iName)=> @_i[iName] or @i[iName]
+
+  addInstance: (name, cl)-> extendNS @_i, @i, name, cl
 
 
   log: (s...)-> console.log "LOG:", s...
 
 
-  _loadDir: (basedir)=>
-    (dir, cb)=>
-      includeDirFiles path.join(basedir, dir), (err, files)=>
-        _.extend @[dir], files
-        cb no
-
-
   _initEngine: ->
     @log '_initEngine'
+    @addClass includeDirFiles(path.join(__dirname, 'classes'))
+    @events = new @c.Events
+    @addInstance 'controllerManager', new @c.ControllerManager
     @events.emit '_initEngine'
 
   execController: (c, m, p, cb)->
-    @controllerManager.exec c, m, p, cb
+    @i.controllerManager.exec c, m, p, cb
 
   start: (config = {})->
     _.extend @config, config
     @events.once '_initEngine', =>
-      controllers = includeDirFiles(path.join(@config.projectDir, @config.eeDir, @config.controllersDir), no)
+      controllers = includeDirFiles(path.join(@config.projectDir, @config.appDir, @config.controllersDir), no)
       for cn, co of controllers
-        @controllerManager.addController cn, co
+        @i.controllerManager.addController cn, co
       @log 'start', @config
-      #async.eachSeries ['controllers'], @_loadDir(path.join(@config.projectDir, @config.eeDir)), =>
+
       @events.emit '_start'
 
 
   onStart: (cb)->
     @events.on '_start', cb
 
-  getError: (text)-> new @classes.error text
-  isError: (obj)-> obj instanceof @classes.error
+  getError: (text)-> new @c.error text
+  isError: (obj)-> obj instanceof @c.error
 
 
 #create engine class
-module.exports = global.ee = global.eengine = ee = new EEngine
+module.exports = ee = new EEngine
 #and init
 ee._initEngine()

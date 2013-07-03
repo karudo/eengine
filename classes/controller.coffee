@@ -22,9 +22,9 @@ module.exports = class Controller extends Base
 
 
   methodExists: (m)->
-    ee._.isFunction @methods[m]
+    @_h.i._.isFunction @methods[m]
 
 
   exec: (m)->
-    ret = @methods[m].call @, @
+    @methods[m].call @, @
 

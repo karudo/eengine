@@ -1,2 +1,13 @@
+heart = null
+s =
+  get: ->
+    heart = require '../engine' unless heart?
+    heart
+  set: ->
+    console.log '_heart !set'
+
 module.exports = class Base
-  log: (s...)-> ee.log 'BASE', s...
+  Object.defineProperty @::, '_heart', s
+  Object.defineProperty @::, '_h', s
+
+  log: (s...)-> @_h.log 'BASE', s...
