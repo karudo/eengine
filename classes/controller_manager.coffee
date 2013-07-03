@@ -17,20 +17,20 @@ module.exports = class ControllerManager extends Base
     @log error
 
 
-  exec: (controllerName, methodName, params, cb)->
+  exec: (controllerName, actionName, params, cb)->
     if @controllers[controllerName]
       cObj = new @controllers[controllerName] params, cb
-      if cObj.methodExists methodName
-        cObj.exec methodName
+      if cObj.actionExists actionName
+        cObj.exec actionName
       else
-        @callCbError cb, "no method #{methodName} in controller #{controllerName}"
+        @callCbError cb, "no action #{actionName} in controller #{controllerName}"
     else
       @callCbError cb, "no controller #{controllerName}"
 
 
-  addController: (name, methods)->
+  addController: (name, actions)->
     class NewController extends Controller
-      methods: methods
+      actions: actions
     @controllers[name] = NewController
 
 

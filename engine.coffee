@@ -38,6 +38,7 @@ class EEngine
   constructor: ->
     @_c = {}
     @_i = {}
+    @_u = {}
     @addInstance {async, _, _s}
     @config =
       projectDir: path.dirname process.mainModule?.filename
@@ -48,15 +49,20 @@ class EEngine
 
   #classes namespace
   c: (clName)=> @_c[clName] or @c[clName]
-
   addClass: (name, cl)-> extendNS @_c, @c, name, cl
 
 
   #instances namespace
   i: (iName)=> @_i[iName] or @i[iName]
-
   addInstance: (name, cl)-> extendNS @_i, @i, name, cl
 
+
+  #utils and helpers
+  u: (iName)=> @_u[iName] or @u[iName]
+  addUtil: (name, cl)-> extendNS @_u, @u, name, cl
+
+  execAction: (c, a, p, cb)->
+    @i.controllerManager.exec c, a, p, cb
 
   log: (s...)-> console.log "LOG:", s...
 
@@ -68,11 +74,12 @@ class EEngine
     @addInstance 'controllerManager', new @c.ControllerManager
     @events.emit '_initEngine'
 
-  execController: (c, m, p, cb)->
-    @i.controllerManager.exec c, m, p, cb
 
   start: (config = {})->
     _.extend @config, config
+
+    @_initEngine()
+
     @events.once '_initEngine', =>
       controllers = includeDirFiles(path.join(@config.projectDir, @config.appDir, @config.controllersDir), no)
       for cn, co of controllers
@@ -91,5 +98,3 @@ class EEngine
 
 #create engine class
 module.exports = ee = new EEngine
-#and init
-ee._initEngine()

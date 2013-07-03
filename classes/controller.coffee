@@ -1,7 +1,7 @@
 Base = require './base'
 
 module.exports = class Controller extends Base
-  methods: {}
+  actions: {}
   cbCalled: no
 
 
@@ -14,17 +14,19 @@ module.exports = class Controller extends Base
 
 
   error: (text)->
-    @callCb "method error: #{text}"
+    @callCb "action error: #{text}"
 
 
   ok: (v...)->
     @callCb no, v...
 
 
-  methodExists: (m)->
-    @_h.i._.isFunction @methods[m]
+  actionExists: do->
+    isFunction = @_h.i._.isFunction
+    atActions = @actions
+    (m)=> isFunction atActions[m]
 
 
   exec: (m)->
-    @methods[m].call @, @
+    @actions[m] @
 
