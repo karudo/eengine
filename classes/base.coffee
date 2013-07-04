@@ -7,7 +7,8 @@ s =
     console.log '_heart !set'
 
 module.exports = class Base
-  Object.defineProperty @::, '_heart', s
+  #Object.defineProperty @::, '_heart', s
+  #TODO: refactor it!
   Object.defineProperty @::, '_h', s
 
   log: (s...)-> @_h.log 'BASE', s...
