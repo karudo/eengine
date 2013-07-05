@@ -81,9 +81,9 @@ class EEngine
     @_initEngine()
 
     @events.once '_initEngine', =>
-      controllers = includeDirFiles(path.join(@config.projectDir, @config.appDir, @config.controllersDir), no)
-      for cn, co of controllers
-        @i.controllerManager.addController cn, co
+      #controllers = includeDirFiles(path.join(@config.projectDir, @config.appDir, @config.controllersDir), no)
+      #for cn, co of controllers
+      #  @i.controllerManager.addController cn, co
       @log 'start', @config
 
       @events.emit '_start'

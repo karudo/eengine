@@ -1,5 +1,7 @@
 Base = require './base'
 
+engine = require '../engine'
+
 module.exports = class Controller extends Base
   actions: {}
   cbCalled: no
@@ -22,9 +24,9 @@ module.exports = class Controller extends Base
 
 
   actionExists: do->
-    isFunction = @_h.i._.isFunction
+    isFunction = engine.i._.isFunction
     atActions = @actions
-    (m)=> isFunction atActions[m]
+    (m)-> isFunction atActions[m]
 
 
   exec: (m)->

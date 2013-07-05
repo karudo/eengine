@@ -1,14 +1,14 @@
 heart = null
-s =
-  get: ->
-    heart = require '../engine' unless heart?
-    heart
-  set: ->
-    console.log '_heart !set'
 
 module.exports = class Base
-  #Object.defineProperty @::, '_heart', s
   #TODO: refactor it!
-  Object.defineProperty @::, '_h', s
+  Object.defineProperty @::, '_h',
+    get: ->
+      console.log 111
+      heart = require '../engine' unless heart?
+      heart
+    set: ->
+      console.log '_heart !set'
+
 
   log: (s...)-> @_h.log 'BASE', s...
