@@ -61,17 +61,25 @@ class EEngine
   u: (iName)=> @_u[iName] or @u[iName]
   addUtil: (name, cl)-> extendNS @_u, @u, name, cl
 
+
   execAction: (c, a, p, cb)->
     @i.controllerManager.exec c, a, p, cb
 
   log: (s...)-> console.log "LOG:", s...
 
 
+  _initExpress: ->
+    e = require('./express')
+    @i.express = new e
+
   _initEngine: ->
     @log '_initEngine'
     @addClass includeDirFiles(path.join(__dirname, 'classes'))
     @events = new @c.Events
     @addInstance 'controllerManager', new @c.ControllerManager
+    global[varName] = ee for varName in @config.globalVars
+
+    @_initExpress()
     @events.emit '_initEngine'
 
 
@@ -81,11 +89,12 @@ class EEngine
     @_initEngine()
 
     @events.once '_initEngine', =>
-      #controllers = includeDirFiles(path.join(@config.projectDir, @config.appDir, @config.controllersDir), no)
-      #for cn, co of controllers
-      #  @i.controllerManager.addController cn, co
+      controllers = includeDirFiles(path.join(@config.projectDir, @config.appDir, @config.controllersDir), no)
+      for cn, co of controllers
+        @i.controllerManager.addController cn, co
       @log 'start', @config
 
+      @i.express.start()
       @events.emit '_start'
 
 

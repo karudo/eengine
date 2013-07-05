@@ -1,16 +1,17 @@
 Base = require './base'
 
-engine = require '../engine'
 
 module.exports = class Controller extends Base
-  actions: {}
+  actions: {actions:{}}
   cbCalled: no
 
 
   constructor: (@params, @cb)->
 
+  log: (text...)-> super 'Controller', text...
 
   callCb: (params...)->
+    @log 'callCb', params
     @cbCalled = yes
     @cb? params...
 
@@ -19,16 +20,14 @@ module.exports = class Controller extends Base
     @callCb "action error: #{text}"
 
 
-  ok: (v...)->
-    @callCb no, v...
+  ok: (args...)->
+    @callCb no, args...
 
 
-  actionExists: do->
-    isFunction = engine.i._.isFunction
-    atActions = @actions
-    (m)-> isFunction atActions[m]
+  actionExists: (a)-> @actions.actions[a]?
 
 
-  exec: (m)->
-    @actions[m] @
+  exec: (a)->
+    obj = new @actions
+    obj[a] @
 

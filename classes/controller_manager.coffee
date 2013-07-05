@@ -1,7 +1,7 @@
 Base = require './base'
 Controller = require './controller'
 
-
+engine = require '../engine'
 
 module.exports = class ControllerManager extends Base
 
@@ -9,7 +9,7 @@ module.exports = class ControllerManager extends Base
     @controllers = {}
 
 
-  log: (text)-> super 'ControllerManager', text
+  log: (text...)-> super 'ControllerManager', text...
 
 
   callCbError: (cb, error)->
@@ -32,6 +32,11 @@ module.exports = class ControllerManager extends Base
     class NewController extends Controller
       actions: actions
     @controllers[name] = NewController
+    for actionName of actions.actions then do (actionName)=>
+      engine.i.express.addAction "/#{name}/#{actionName}", (params, cb)=>
+        @exec name, actionName, params, -> cb arguments...
+
+    return
 
 
 
