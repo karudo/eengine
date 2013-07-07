@@ -1,3 +1,4 @@
+path = require 'path'
 express = require 'express'
 
 Base = require './classes/base'
@@ -7,6 +8,7 @@ module.exports = class Express extends Base
     super
     @app = express()
     @configure()
+
 
   configure: ->
 
@@ -44,6 +46,12 @@ module.exports = class Express extends Base
           res.json 500, {error}
         else
           res.json responce
+
+
+  setPublicDir: (dir)->
+    indexFile = path.join dir, 'index.html'
+    @app.get '/', (req, res)-> res.sendfile indexFile
+    @app.use '/static', express.static dir
 
 
   start: ->

@@ -7,8 +7,8 @@ _ = require 'underscore'
 _s = require 'underscore.string'
 
 
-includeDirFiles = (dir, classify = yes)->
-  console.log 'includeDirFiles', dir
+includeDirClasses = (dir, classify = yes)->
+  console.log 'includeDirClasses', dir
   files = fs.readdirSync dir
   ret = {}
   for file in files
@@ -38,12 +38,11 @@ class EEngine
   constructor: ->
     @_c = {}
     @_i = {}
-    @_u = {}
+    @_u = {includeDirClasses}
     @addInstance {async, _, _s}
     @config =
       projectDir: path.dirname process.mainModule?.filename
-      appDir: 'app'
-      controllersDir: 'controllers'
+      appSubDir: 'app'
       globalVars: ['ee', 'eengine']
 
 
@@ -68,13 +67,20 @@ class EEngine
   log: (s...)-> console.log "LOG:", s...
 
 
+  _setDefaults: ->
+    unless @config.controllersDir
+      @config.controllersDir = path.join @config.projectDir, @config.appSubDir, 'controllers'
+    unless @config.publicDir
+      @config.publicDir = path.join @config.projectDir, @config.appSubDir, 'public'
+
+
   _initExpress: ->
     e = require('./express')
     @i.express = new e
 
   _initEngine: ->
     @log '_initEngine'
-    @addClass includeDirFiles(path.join(__dirname, 'classes'))
+    @addClass includeDirClasses(path.join(__dirname, 'classes'))
     @events = new @c.Events
     @addInstance 'controllerManager', new @c.ControllerManager
     global[varName] = ee for varName in @config.globalVars
@@ -89,11 +95,12 @@ class EEngine
     @_initEngine()
 
     @events.once '_initEngine', =>
-      controllers = includeDirFiles(path.join(@config.projectDir, @config.appDir, @config.controllersDir), no)
-      for cn, co of controllers
+      @_setDefaults()
+      for cn, co of includeDirClasses @config.controllersDir, no
         @i.controllerManager.addController cn, co
       @log 'start', @config
 
+      @i.express.setPublicDir @config.publicDir
       @i.express.start()
       @events.emit '_start'
 
