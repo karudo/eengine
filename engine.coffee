@@ -37,6 +37,7 @@ class EEngine
 
   constructor: ->
     @_c = {}
+    @_m = {}
     @_i = {}
     @_u = {includeDirClasses}
     @addInstance {async, _, _s}
@@ -51,18 +52,23 @@ class EEngine
   addClass: (name, cl)-> extendNS @_c, @c, name, cl
 
 
+  #models namespace
+  m: (mName)=> @_c[mName] or @c[mName]
+  addModel: (name, mod)-> extendNS @_m, @m, name, mod
+
+
   #instances namespace
   i: (iName)=> @_i[iName] or @i[iName]
   addInstance: (name, cl)-> extendNS @_i, @i, name, cl
 
 
   #utils and helpers
-  u: (iName)=> @_u[iName] or @u[iName]
+  u: (uName)=> @_u[uName] or @u[uName]
   addUtil: (name, cl)-> extendNS @_u, @u, name, cl
 
 
-  execAction: (c, a, p, cb)->
-    @i.controllerManager.exec c, a, p, cb
+  execAction: (controller, action, params, cb)->
+    @i.controllerManager.exec controller, action, params, cb
 
   log: (s...)-> console.log "LOG:", s...
 
@@ -70,13 +76,18 @@ class EEngine
   _setDefaults: ->
     unless @config.controllersDir
       @config.controllersDir = path.join @config.projectDir, @config.appSubDir, 'controllers'
-    unless @config.publicDir
-      @config.publicDir = path.join @config.projectDir, @config.appSubDir, 'public'
+    unless @config.clientDir
+      @config.clientDir = path.join @config.projectDir, @config.appSubDir, 'client'
+    unless @config.configDir
+      @config.configDir = path.join @config.projectDir, 'config'
 
 
   _initExpress: ->
     e = require('./express')
     @i.express = new e
+    @i.express.setStaticDir @config.clientDir
+    @i.express.addScripts @config.client.scripts
+
 
   _initEngine: ->
     @log '_initEngine'
@@ -85,7 +96,6 @@ class EEngine
     @addInstance 'controllerManager', new @c.ControllerManager
     global[varName] = ee for varName in @config.globalVars
 
-    @_initExpress()
     @events.emit '_initEngine'
 
 
@@ -96,11 +106,13 @@ class EEngine
 
     @events.once '_initEngine', =>
       @_setDefaults()
+      _.extend @config, require(@config.configDir)
       for cn, co of includeDirClasses @config.controllersDir, no
         @i.controllerManager.addController cn, co
       @log 'start', @config
 
-      @i.express.setPublicDir @config.publicDir
+      @_initExpress()
+
       @i.express.start()
       @events.emit '_start'
 
