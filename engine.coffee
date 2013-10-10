@@ -89,6 +89,11 @@ class EEngine
     @i.express.addScripts @config.client.scripts
 
 
+  _initSIO: ->
+    s = require './websocket'
+    @i.websocket = new s @i.express
+
+
   _initEngine: ->
     @log '_initEngine'
     @addClass includeDirClasses(path.join(__dirname, 'classes'))
@@ -112,6 +117,7 @@ class EEngine
       @log 'start', @config
 
       @_initExpress()
+      @_initSIO()
 
       @i.express.start()
       @events.emit '_start'

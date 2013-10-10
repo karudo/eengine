@@ -1,4 +1,6 @@
 path = require 'path'
+http = require 'http'
+
 express = require 'express'
 hbs = require 'express-hbs'
 
@@ -8,6 +10,7 @@ module.exports = class Express extends Base
   constructor: ->
     super
     @app = express()
+    @httpServer = http.createServer @app
     @scripts = []
     @styles = []
     @configure()
@@ -51,9 +54,15 @@ module.exports = class Express extends Base
     @app.use '/static', express.static dir
 
 
-  addScript: (script)->
-    fullPath = path.join '/static', script
-    @scripts.push fullPath
+  addScript: (script, unshift = no)->
+    if script.substring(0, 1) is '/'
+      fullPath = script
+    else
+      fullPath = path.join '/static', script
+    if unshift
+      @scripts.unshift fullPath
+    else
+      @scripts.push fullPath
     fullPath
 
 
@@ -63,5 +72,4 @@ module.exports = class Express extends Base
 
 
   start: ->
-    console.log @
-    @app.listen(3000)
+    @httpServer.listen(3000)
